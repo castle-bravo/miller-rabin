@@ -25,44 +25,54 @@
  *          2^64 if n is larger than 2^32.
  *          This can be fixed in a future version that uses a 128-bit
  *          integer to represent x if n is greater than 2^32. 
- * 
- * note:    This version uses a deterministic version of the test. In
- *          versions supporting numbers larger than 3825123056546413051
- *          a nondeterministic version of the test will have to be
- *          written.
  */
- 
+
+#ifndef _MILLER_RABIN_H_
+#define _MILLER_RABIN_H
+
+#include <random>
 #include <stdint.h>
 #include <vector>
-//using namespace std;
 
-// deterministic test
-bool is_prime(uint32_t n) {
+bool is_prime(uint32_t n, bool deterministic = false, uint32_t k = 4) {
   if (n == 0 || n == 1) return false;
   if (n == 2 || n == 3) return true;
   if (n % 2 == 0) return false;
   std::vector<uint32_t> A; // set of witnesses
+  if (k > n - 2) deterministic = true;
+  if (deterministic) {
   if (n < 2047) {
-    A = std::vector<uint32_t>({ 2 });
-  } else if (n < 1373653) {
-    A = std::vector<uint32_t>({ 2, 3 });
-  } else if (n < 9090191) {
-    A = std::vector<uint32_t>({ 31, 73 });
-  } else if (n < 25326001) {
-    A = std::vector<uint32_t>({ 2, 3, 5 });
-  } else /*if (n < 4759123141)*/ { // larger than 32-bit integer
-    A = std::vector<uint32_t>({ 2, 7, 61 });
-  } /*else if (n < 1122004669633) {
-    A = std::vector<uint32_t>({ 2, 13, 23, 1662803 });
-  } else if (n < 2152302898747) {
-    A = std::vector<uint32_t>({ 2, 3, 5, 7, 11 });
-  } else if (n < 3474749660383) {
-    A = std::vector<uint32_t>({ 2, 3, 5, 7, 11, 13 });
-  } else if (n < 341550071728321) {
-    A = std::vector<uint32_t>({ 2, 3, 5, 7, 11, 13, 17 });
-  } else if (n < 3825123056546413051) {
-    A = std::vector<uint32_t>({ 2, 3, 5, 7, 11, 13, 17, 19, 23 });
-  } */ // else use randomly generated A!!
+      A = std::vector<uint32_t>({ 2 });
+    } else if (n < 1373653) {
+      A = std::vector<uint32_t>({ 2, 3 });
+    } else if (n < 9090191) {
+      A = std::vector<uint32_t>({ 31, 73 });
+    } else if (n < 25326001) {
+      A = std::vector<uint32_t>({ 2, 3, 5 });
+    } else {
+      deterministic = false;
+    }
+    /*if (n < 4759123141) { // larger than 32-bit integer
+      A = std::vector<uint32_t>({ 2, 7, 61 });
+    } else if (n < 1122004669633) {
+      A = std::vector<uint32_t>({ 2, 13, 23, 1662803 });
+    } else if (n < 2152302898747) {
+      A = std::vector<uint32_t>({ 2, 3, 5, 7, 11 });
+    } else if (n < 3474749660383) {
+      A = std::vector<uint32_t>({ 2, 3, 5, 7, 11, 13 });
+    } else if (n < 341550071728321) {
+      A = std::vector<uint32_t>({ 2, 3, 5, 7, 11, 13, 17 });
+    } else if (n < 3825123056546413051) {
+      A = std::vector<uint32_t>({ 2, 3, 5, 7, 11, 13, 17, 19, 23 });
+    } */ // else use randomly generated A
+  }
+  if (not deterministic) {
+    std::default_random_engine generator;
+    std::uniform_int_distribution<uint32_t> uniform(2, n - 1);
+    for (uint32_t i = 0; i < k; i++) {
+      A.push_back(uniform(generator));
+    }
+  }
   uint32_t d = n - 1;
   uint32_t s = 0;
   while (d % 2 == 0) {
@@ -85,3 +95,5 @@ bool is_prime(uint32_t n) {
   }
   return true;
 }
+
+#endif
