@@ -27,7 +27,9 @@
  *          integer to represent x if n is greater than 2^32. 
  * 
  * note:    This version uses a deterministic version of the test. In
- *          future versions, 
+ *          versions supporting numbers larger than 3825123056546413051
+ *          a nondeterministic version of the test will have to be
+ *          written.
  */
  
 #include <stdint.h>
